@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	author : 임형진
+	fileName : 서비스구현평가.pdf
+	content : Professor와 Department 테이블을 join한 기능에 대한 매퍼
+	lastUpdate : 2019-01-18
+
+-->
+	
+<!-- 이 파일의 경로를 config.xml에 명시해야 한다. -->
+
+<!-- Professor 테이블에 대한 CRUD 기능을 구현하기 위한 Mapper -->
+<mapper namespace="ProfessorJoinMapper">
+
+
+	<!-- Beans 클래스의 객체이름(id)과 클래스이름(type)을 명시한다. -->
+	<resultMap type="study.spring.hellospring.model.ProfessorDepartment" id="professor_department">
+		<!-- Beans의 멤버변수(property)이름과 대상 테이블의 컬럼(column)을 연결한다. -->
+		<result property="profno"	column="profno" />
+		<result property="name"	column="name" />
+		<result property="userid"	column="userid" />
+		<result property="position"	column="position" />
+		<result property="sal"	column="sal" />
+		<result property="hiredate"	column="hiredate" />
+		<result property="comm"	column="comm" />
+		<result property="deptno"	column="deptno" />
+		<result property="dname"	column="dname" />
+		<!-- select문에 별칭을 적용할 경우 column에 별칭을 명시해야 한다. -->
+	</resultMap>
+	<!-- 교수+학과 테이블을 조인하여 목록조회 -->
+	<select id="selectProfessorJoinList" parameterType="study.spring.hellospring.model.ProfessorDepartment"
+	resultMap="professor_department">
+		SELECT
+			profno, name, userid, position, sal,
+			Date_format(hiredate, '%Y-%m-%d') AS hiredate,
+			comm, p.deptno as deptno, d.dname as dname
+		FROM professor p INNER JOIN department d ON p.deptno=d.deptno
+		
+		<where>
+			<if test="name != null and name != '' ">
+				name LIKE concat('%', #{name}, '%')
+			</if>
+		</where>
+		ORDER BY profno DESC
+		LIMIT #{limitStart}, #{listCount}		
+	
+	</select>
+	
+	<select id="selectProfessorJoinItem" parameterType="study.spring.hellospring.model.ProfessorDepartment"
+	resultMap="professor_department">
+		SELECT
+			profno, name, userid, position, sal,
+			Date_format(hiredate, '%Y-%m-%d') AS hiredate,
+			comm, p.deptno as deptno, d.dname as dname
+		FROM professor p INNER JOIN department d ON p.deptno=d.deptno
+		WHERE profno=#{profno}
+				
+	
+	</select>
+	
+	<!-- 조인 결과에 대한 전체 데이터 수 얻기 -->
+	<!-- 집계 함수는 리턴값이 빈즈의 멤버변수 형태가 아니라 정수 형태이므로 int형을 명시해야 한다. -->
+	<select id="selectProfessorCount" parameterType="study.spring.hellospring.model.ProfessorDepartment"
+	resultType="int">
+		SELECT
+			count(profno)
+		FROM professor p INNER JOIN department d ON p.deptno=d.deptno
+		
+		<where>
+			<if test="name != null and name != ''">
+				name LIKE concat('%', #{name}, '%')
+			</if>
+		</where>	
+	</select>
+	
+</mapper>
